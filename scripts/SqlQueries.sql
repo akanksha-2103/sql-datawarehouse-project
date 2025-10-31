@@ -94,6 +94,6 @@ maintenance varchar(50)
 );
 
 
-LOAD DATA LOCAL INFILE '/Users/gangamakankshareddy/Downloads/datasets/source_erp/PX_CAT_G1V2.csv'INTO TABLE bronze.px_cat_g1v2
+LOAD DATA LOCAL INFILE '/Users/gangamakankshareddy/Downloads/datasets/source_erp/PX_CAT_G1V2.csv'INTO TABLE bronze.erp_px_cat_g1v2
 FIELDS TERMINATED BY ','
 IGNORE 1 ROWS;
