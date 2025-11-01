@@ -149,3 +149,35 @@ SELECT
     sls_quantity
 FROM bronze.crm_sales_details;
 
+-- insert into silver.erp_loc_a101--
+
+INSERT INTO silver.erp_loc_a101(
+cid,
+cntry
+)
+
+SELECT 
+REPLACE (cid,'-','')as cid,
+CASE
+  WHEN trim(cntry)='DE' THEN 'GERMANY'
+  WHEN TRIM(CNTRY)IN ('US','USA') THEN 'UNITED STATES'
+  WHEN trim(cntry)='' or cntry is null then 'n/a'
+  ELSE trim(cntry)
+  end as cntry
+from bronze.erp_loc_a101;
+
+
+-- erp_px_cat_g1v2 --
+
+INSERT INTO silver.erp_px_cat_g1v2(
+id,
+cat,
+subcat,
+maintenance
+)
+SELECT 
+id,
+cat,
+subcat,
+maintenance
+FROM bronze.erp_px_cat_g1v2;
