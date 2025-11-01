@@ -8,6 +8,7 @@ cst_gndr varchar(50),
 cst_create_date DATE
 );
 
+
 CREATE TABLE silver.crm_prd_info(
 prd_id INT,
 prd_key varchar(50),
