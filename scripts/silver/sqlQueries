@@ -1,0 +1,82 @@
+-- fix crm.cust_info
+
+INSERT INTO silver.crm_cust_info(
+            cst_id,
+            cst_key,
+            cst_firstname,
+            cst_lastname,
+            cst_marital_status,
+            cst_gndr,
+            cst_create_date
+            )
+select
+cst_id,
+cst_key,
+TRIM(cst_firstname) as cst_fristname,
+TRIM(cst_lastname) as cst_lastname,
+CASE
+  WHEN Upper(TRIM(cst_marital_status))='S' then 'Single'
+  WHEN Upper(TRIM(cst_marital_status))='M' then 'Married'
+  else 'n/a'
+  end as cst_marital_status,
+CASE
+  WHEN Upper(TRIM(cst_gndr))='M' then 'Male'
+  WHEN Upper(TRIM(cst_gndr))='F' then 'Female'
+  else 'n/a'
+  end as cst_gndr,
+  cst_create_date
+from
+(
+SELECT*,
+ROW_NUMBER()OVER(PARTiTION by cst_id ORDER BY cst_create_date DESC) as rank_by_create_date
+from bronze.crm_cust_info
+)as t
+where rank_by_create_date=1 and cst_id is not null ;
+
+
+
+-- fix crm_prd_info
+
+DROP TABLE IF EXISTS silver.crm_prd_info;
+
+CREATE TABLE silver.crm_prd_info(
+prd_id INT,
+prd_key varchar(50),
+prd_nm varchar(50),
+prd_cost INT,
+prd_line varchar(50),
+prd_start_dt DATE,
+prd_end_dt DATE,
+dwh_create_date DATETIME DEFAULT 
+CURRENT_TIMESTAMP
+);
+
+
+INSERT INTO silver.crm_prd_info(
+            prd_id,
+            cat_id,
+            prd_key,
+            prd_nm,
+            prd_cost,
+            prd_line,
+            prd_start_dt,
+            prd_end_dt
+            )
+SELECT
+prd_id,
+REPLACE(SUBSTRING(prd_key,1,5),'-','_') as Cat_id,
+SUBSTRING(prd_key,7,LENGTH(prd_key)) as prd_key,
+prd_nm,
+prd_cost,
+CASE
+          WHEN UPPER(trim(PRD_LINE))='M' THEN 'MOUNTAIN'
+          WHEN UPPER(trim(PRD_LINE))='R' THEN 'ROAD'
+          WHEN UPPER(trim(PRD_LINE))='S' THEN 'OTHER SALES'
+          WHEN UPPER(trim(PRD_LINE))='T' THEN 'TOURING'
+          ELSE 'n/a'
+	END AS prd_line,
+    CAST(prd_start_dt AS DATE) AS prd_start_dt,
+DATE_SUB(
+LEAD(prd_start_dt)OVER(PARTITION BY prd_key ORDER BY prd_start_dt),INTERVAL 1 DAY) AS prd_end_dt
+from bronze.crm_prd_info
+;
